@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto News Aggregator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .search-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        #crypto-input {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #search-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #news-container {
+            margin-top: 30px;
+        }
+
+        .news-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2b4c7e;
+        }
+
+        .news-source {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .news-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .news-desc {
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto News Aggregator</h1>
+
+        <div class="search-container">
+            <input type="text" id="crypto-input" placeholder="Enter crypto symbol (e.g., BTC)">
+            <button id="search-btn">Search News</button>
+        </div>
+
+        <div class="loading" id="loading">Loading news...</div>
+        <div class="error" id="error-message"></div>
+
+        <div id="news-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchBtn = document.getElementById('search-btn');
+            const cryptoInput = document.getElementById('crypto-input');
+            const newsContainer = document.getElementById('news-container');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+
+            searchBtn.addEventListener('click', function () {
+                const crypto = cryptoInput.value.trim();
+                if (!crypto) {
+                    showError('Please enter a crypto symbol');
+                    return;
+                }
+
+                fetchNews(crypto);
+            });
+
+            function fetchNews(crypto) {
+                showLoading();
+                hideError();
+
+                fetch(`/api/news/${crypto}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch news');
+                        }
+                        return response.json();
+                    })
+                    .then(news => {
+                        hideLoading();
+                        displayNews(news);
+                    })
+                    .catch(error => {
+                        hideLoading();
+                        showError('Error fetching news: ' + error.message);
+                        console.error('Error:', error);
+                    });
+            }
+
+            function displayNews(news) {
+                newsContainer.innerHTML = '';
+
+                if (news.length === 0) {
+                    newsContainer.innerHTML = '<p>No news found for this crypto.</p>';
+                    return;
+                }
+
+                news.forEach(item => {
+                    const newsItem = document.createElement('div');
+                    newsItem.className = 'news-item';
+
+                    const date = new Date(item.published_at);
+                    const formattedDate = date.toLocaleString();
+
+                    newsItem.innerHTML = `
+                                    <a href="${item.url}" target="_blank" class="news-title">${item.title}</a>
+                                    <div class="news-source">Source: ${item.source}</div>
+                                    <div class="news-date">Published: ${formattedDate}</div>
+                                    ${item.description ? `<div class="news-desc">${item.description}</div>` : ''}
+                                `;
+
+                    newsContainer.appendChild(newsItem);
+                });
+            }
+
+            function showLoading() {
+                loading.style.display = 'block';
+                newsContainer.innerHTML = '';
+            }
+
+            function hideLoading() {
+                loading.style.display = 'none';
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
