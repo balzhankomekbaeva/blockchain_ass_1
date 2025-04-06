@@ -12,10 +12,10 @@ Rust service that fetches cryptocurrency news from multiple APIs.
 2. `cargo run`
 3. Open http://localhost:8080
 
-##Examples:
+## Examples:
 To search for cryptocurrency news, enter the name or symbol of the cryptocurrency (e.g., Bitcoin or BTC) into the search bar on the homepage and click "Search."
 
-##Example:
+## Example:
 Input: BTC
 Output: The latest news articles related to Bitcoin will be displayed, including the article title, source, publication date, summary, and a link to the full article.
 
